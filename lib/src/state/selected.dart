@@ -11,13 +11,13 @@ typedef S2MultiSelectedResolver<T> = Future<List<S2Choice<T>>> Function(
 /// State of the selected choice
 abstract class S2Selected<T> extends ChangeNotifier {
   /// A `String` to return in `toString` if the `title` is empty
-  String? placeholder;
+  String? get placeholder;
 
   /// Function to resolve [choice] from [value]
-  covariant var resolver;
+  Function? get resolver;
 
   /// A Function used to validate the selection(s)
-  covariant var validation;
+  Function? get validation;
 
   /// Returns the length of the [choice]
   int get length;
@@ -107,6 +107,8 @@ class S2SingleSelected<T> extends S2Selected<T> {
 
   S2Choice<T>? _choice;
 
+  bool _disposed = false;
+
   /// Function to resolve [choice] from [value]
   @override
   S2SingleSelectedResolver<T>? resolver;
@@ -132,7 +134,7 @@ class S2SingleSelected<T> extends S2Selected<T> {
   void resolve({
     S2SingleSelectedResolver<T>? defaultResolver,
   }) async {
-    if (isResolved) return null;
+    if (isResolved || _disposed) return null;
 
     isResolving = true;
     resolver = resolver ?? defaultResolver;
@@ -144,12 +146,15 @@ class S2SingleSelected<T> extends S2Selected<T> {
       rethrow;
     } finally {
       isResolving = false;
-      validate();
+      if (!_disposed) {
+        validate();
+      }
     }
   }
 
   @override
   set choice(S2Choice<T>? val) {
+    if (_disposed) return;
     _choice = val;
     ////////////// ???????????? /////////////
     // _value = null;
@@ -159,6 +164,7 @@ class S2SingleSelected<T> extends S2Selected<T> {
 
   @override
   set value(T val) {
+    if (_disposed) return;
     _value = val;
     _choice = null;
     resolve();
@@ -202,6 +208,19 @@ class S2SingleSelected<T> extends S2Selected<T> {
             ? title ?? placeholder ?? 'Select one'
             : error;
   }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
+  }
 }
 
 /// State of multiple selected choice
@@ -219,6 +238,8 @@ class S2MultiSelected<T> extends S2Selected<T> {
   List<T> _value;
 
   List<S2Choice<T>>? _choice;
+
+  bool _disposed = false;
 
   /// Function to resolve [choice] from [value]
   @override
@@ -245,7 +266,7 @@ class S2MultiSelected<T> extends S2Selected<T> {
   void resolve({
     S2MultiSelectedResolver<T>? defaultResolver,
   }) async {
-    if (isResolved) return null;
+    if (isResolved || _disposed) return null;
 
     isResolving = true;
     resolver = resolver ?? defaultResolver;
@@ -257,12 +278,15 @@ class S2MultiSelected<T> extends S2Selected<T> {
       rethrow;
     } finally {
       isResolving = false;
-      validate();
+      if (!_disposed) {
+        validate();
+      }
     }
   }
 
   @override
   set choice(List<S2Choice<T>>? choices) {
+    if (_disposed) return;
     _choice = List<S2Choice<T>>.from(choices ?? []);
     _value = [];
     validate();
@@ -270,6 +294,7 @@ class S2MultiSelected<T> extends S2Selected<T> {
 
   @override
   set value(List<T> val) {
+    if (_disposed) return;
     _value = List<T>.from(val);
     _choice = null;
     resolve();
@@ -320,5 +345,18 @@ class S2MultiSelected<T> extends S2Selected<T> {
         : isValid == true
             ? title?.join(', ') ?? placeholder ?? 'Select one or more'
             : error;
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+  @override
+  void notifyListeners() {
+    if (!_disposed) {
+      super.notifyListeners();
+    }
   }
 }

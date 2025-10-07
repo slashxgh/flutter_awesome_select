@@ -895,7 +895,8 @@ abstract class S2State<T> extends State<SmartSelect<T>> {
     choices?.removeListener(_choicesHandler);
     selected.removeListener(selectedHandler);
     choices?.dispose();
-    selected.dispose();
+    // Don't dispose selected - it's owned by the parent widget
+    // selected.dispose();
     super.dispose();
   }
 }

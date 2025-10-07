@@ -65,6 +65,7 @@ class S2SingleState<T> extends S2State<T> {
   @override
   void resolveSelected() async {
     selected
+      ..removeListener(super.selectedHandler)
       ..addListener(super.selectedHandler)
       ..resolve(defaultResolver: (value) async {
         return widget.choiceItems?.firstWhereOrNull(
@@ -89,7 +90,11 @@ class S2SingleState<T> extends S2State<T> {
     super.didUpdateWidget(oldWidget);
 
     // reset the initial value
-    if (oldWidget.singleSelected != widget.singleSelected) resolveSelected();
+    if (oldWidget.singleSelected != widget.singleSelected) {
+      // Remove listener from old selected object
+      oldWidget.singleSelected?.removeListener(super.selectedHandler);
+      resolveSelected();
+    }
   }
 
   @override

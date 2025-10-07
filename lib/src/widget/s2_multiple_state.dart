@@ -66,6 +66,7 @@ class S2MultiState<T> extends S2State<T> {
   void resolveSelected() async {
     if (widget.multiSelected != null) {
       selected
+        ..removeListener(selectedHandler)
         ..addListener(selectedHandler)
         ..resolve(defaultResolver: (value) async {
           return widget.choiceItems
@@ -93,7 +94,11 @@ class S2MultiState<T> extends S2State<T> {
     super.didUpdateWidget(oldWidget);
 
     // reset the initial value
-    if (oldWidget.multiSelected != widget.multiSelected) resolveSelected();
+    if (oldWidget.multiSelected != widget.multiSelected) {
+      // Remove listener from old selected object
+      oldWidget.multiSelected?.removeListener(selectedHandler);
+      resolveSelected();
+    }
   }
 
   @override
