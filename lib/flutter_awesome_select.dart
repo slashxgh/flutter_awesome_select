@@ -21,3 +21,4 @@ export 'src/model/chosen.dart';
 export 'src/model/choice_loader.dart';
 export 'src/tile/tile.dart';
 export 'src/tile/tile_chips.dart';
+export 'src/widget/smart_select_form_field.dart';
