@@ -248,63 +248,82 @@ class SmartSelectFormField<T> extends FormField<T> {
               return wrapperBuilder(state.context, smartSelectWidget, state);
             }
 
-            // Build error widget if there's an error
-            Widget? errorWidget;
-            if (fieldState.hasError && fieldState.errorText != null) {
-              final config = errorConfig ?? const SmartSelectFormFieldErrorConfig();
-              if (config.errorBuilder != null) {
-                errorWidget = config.errorBuilder!(state.context, fieldState.errorText);
-              } else {
-                final theme = Theme.of(state.context);
-                errorWidget = Padding(
-                  padding: config.errorPadding ?? const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    fieldState.errorText!,
-                    style: config.errorStyle ??
-                        TextStyle(
-                          color: theme.colorScheme.error,
-                          fontSize: 12.0,
-                        ),
-                    maxLines: config.errorMaxLines,
-                    overflow: config.errorMaxLines != null ? TextOverflow.ellipsis : null,
-                  ),
-                );
-              }
-            }
-
             // Use InputDecorator if enabled
             if (useInputDecorator) {
+              final theme = Theme.of(state.context);
+
+              // Extract borderRadius from caller's decoration or use default
+              final callerBorder = decoration?.border;
+              final borderRadius = callerBorder is OutlineInputBorder
+                  ? callerBorder.borderRadius
+                  : BorderRadius.circular(8);
+
+              // Build all border variants with consistent borderRadius
+              final normalBorder = callerBorder is OutlineInputBorder
+                  ? callerBorder
+                  : OutlineInputBorder(
+                      borderRadius: borderRadius,
+                      borderSide: BorderSide(
+                        color: theme.dividerColor,
+                        width: 1.0,
+                      ),
+                    );
+
+              final errorBorderStyle = OutlineInputBorder(
+                borderRadius: borderRadius,
+                borderSide: BorderSide(
+                  color: theme.colorScheme.error,
+                  width: 1.5,
+                ),
+              );
+
               final InputDecoration effectiveDecoration = (decoration ??
                       const InputDecoration())
-                  .applyDefaults(Theme.of(state.context).inputDecorationTheme);
+                  .applyDefaults(theme.inputDecorationTheme);
 
+              // Explicitly set ALL border types to prevent theme overrides
               return InputDecorator(
                 decoration: effectiveDecoration.copyWith(
                   errorText: fieldState.errorText,
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.zero,
+                  border: normalBorder,
+                  enabledBorder: normalBorder,
+                  focusedBorder: normalBorder,
+                  errorBorder: errorBorderStyle,
+                  focusedErrorBorder: errorBorderStyle,
+                  disabledBorder: normalBorder,
                   enabled: enabled,
                 ),
                 child: smartSelectWidget,
               );
             }
 
-            // Without InputDecorator, manually handle error display
-            final config = errorConfig ?? const SmartSelectFormFieldErrorConfig();
-            if (errorWidget != null) {
-              if (config.errorBelowField) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [smartSelectWidget, errorWidget],
-                );
-              } else {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [errorWidget, smartSelectWidget],
-                );
-              }
+            // Without InputDecorator, build error display manually
+            if (fieldState.hasError && fieldState.errorText != null) {
+              final theme = Theme.of(state.context);
+              final config = errorConfig ?? const SmartSelectFormFieldErrorConfig();
+              final Widget errorWidget = config.errorBuilder != null
+                  ? config.errorBuilder!(state.context, fieldState.errorText)
+                  : Padding(
+                      padding: config.errorPadding ?? const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        fieldState.errorText!,
+                        style: config.errorStyle ??
+                            TextStyle(
+                              color: theme.colorScheme.error,
+                              fontSize: 12.0,
+                            ),
+                        maxLines: config.errorMaxLines,
+                        overflow: config.errorMaxLines != null ? TextOverflow.ellipsis : null,
+                      ),
+                    );
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: config.errorBelowField
+                    ? [smartSelectWidget, errorWidget]
+                    : [errorWidget, smartSelectWidget],
+              );
             }
 
             return smartSelectWidget;
@@ -522,63 +541,82 @@ class SmartSelectMultipleFormField<T> extends FormField<List<T>> {
               return wrapperBuilder(state.context, smartSelectWidget, state);
             }
 
-            // Build error widget if there's an error
-            Widget? errorWidget;
-            if (fieldState.hasError && fieldState.errorText != null) {
-              final config = errorConfig ?? const SmartSelectFormFieldErrorConfig();
-              if (config.errorBuilder != null) {
-                errorWidget = config.errorBuilder!(state.context, fieldState.errorText);
-              } else {
-                final theme = Theme.of(state.context);
-                errorWidget = Padding(
-                  padding: config.errorPadding ?? const EdgeInsets.only(top: 8.0),
-                  child: Text(
-                    fieldState.errorText!,
-                    style: config.errorStyle ??
-                        TextStyle(
-                          color: theme.colorScheme.error,
-                          fontSize: 12.0,
-                        ),
-                    maxLines: config.errorMaxLines,
-                    overflow: config.errorMaxLines != null ? TextOverflow.ellipsis : null,
-                  ),
-                );
-              }
-            }
-
             // Use InputDecorator if enabled
             if (useInputDecorator) {
+              final theme = Theme.of(state.context);
+
+              // Extract borderRadius from caller's decoration or use default
+              final callerBorder = decoration?.border;
+              final borderRadius = callerBorder is OutlineInputBorder
+                  ? callerBorder.borderRadius
+                  : BorderRadius.circular(8);
+
+              // Build all border variants with consistent borderRadius
+              final normalBorder = callerBorder is OutlineInputBorder
+                  ? callerBorder
+                  : OutlineInputBorder(
+                      borderRadius: borderRadius,
+                      borderSide: BorderSide(
+                        color: theme.dividerColor,
+                        width: 1.0,
+                      ),
+                    );
+
+              final errorBorderStyle = OutlineInputBorder(
+                borderRadius: borderRadius,
+                borderSide: BorderSide(
+                  color: theme.colorScheme.error,
+                  width: 1.5,
+                ),
+              );
+
               final InputDecoration effectiveDecoration = (decoration ??
                       const InputDecoration())
-                  .applyDefaults(Theme.of(state.context).inputDecorationTheme);
+                  .applyDefaults(theme.inputDecorationTheme);
 
+              // Explicitly set ALL border types to prevent theme overrides
               return InputDecorator(
                 decoration: effectiveDecoration.copyWith(
                   errorText: fieldState.errorText,
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.zero,
+                  border: normalBorder,
+                  enabledBorder: normalBorder,
+                  focusedBorder: normalBorder,
+                  errorBorder: errorBorderStyle,
+                  focusedErrorBorder: errorBorderStyle,
+                  disabledBorder: normalBorder,
                   enabled: enabled,
                 ),
                 child: smartSelectWidget,
               );
             }
 
-            // Without InputDecorator, manually handle error display
-            final config = errorConfig ?? const SmartSelectFormFieldErrorConfig();
-            if (errorWidget != null) {
-              if (config.errorBelowField) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [smartSelectWidget, errorWidget],
-                );
-              } else {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [errorWidget, smartSelectWidget],
-                );
-              }
+            // Without InputDecorator, build error display manually
+            if (fieldState.hasError && fieldState.errorText != null) {
+              final theme = Theme.of(state.context);
+              final config = errorConfig ?? const SmartSelectFormFieldErrorConfig();
+              final Widget errorWidget = config.errorBuilder != null
+                  ? config.errorBuilder!(state.context, fieldState.errorText)
+                  : Padding(
+                      padding: config.errorPadding ?? const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        fieldState.errorText!,
+                        style: config.errorStyle ??
+                            TextStyle(
+                              color: theme.colorScheme.error,
+                              fontSize: 12.0,
+                            ),
+                        maxLines: config.errorMaxLines,
+                        overflow: config.errorMaxLines != null ? TextOverflow.ellipsis : null,
+                      ),
+                    );
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: config.errorBelowField
+                    ? [smartSelectWidget, errorWidget]
+                    : [errorWidget, smartSelectWidget],
+              );
             }
 
             return smartSelectWidget;
